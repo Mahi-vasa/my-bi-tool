@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>My BI Tool</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+
+    body {
+      background-color: #1a1a2e;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .header {
+      background-color: #16213e;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .header h1 { margin: 0; color: #f0a500; font-size: 24px; }
+
+    /* FILTER BAR */
+    .filter-bar {
+      background-color: #16213e;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-bar label {
+      color: #aaaaaa;
+      font-size: 12px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    /* Each dropdown box */
+    .filter-bar select {
+      background-color: #0f3460;
+      color: white;
+      border: 1px solid #f0a500;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* Reset button */
+    .reset-btn {
+      background-color: #f0a500;
+      color: #1a1a2e;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 18px;
+    }
+    .reset-btn:hover { background-color: #ffbe33; }
+
+    .kpi-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .kpi-box {
+      background-color: #16213e;
+      padding: 20px;
+      border-radius: 8px;
+      flex: 1;
+      text-align: center;
+    }
+    .kpi-number { font-size: 36px; color: #f0a500; font-weight: bold; }
+    .kpi-label  { font-size: 12px; color: #aaaaaa; margin-top: 5px; }
+
+    .chart-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .chart-box {
+      background-color: #16213e;
+      padding: 20px;
+      border-radius: 8px;
+      flex: 1;
+    }
+    .chart-title { color: #f0a500; margin-bottom: 15px; font-size: 16px; margin-top: 0; }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- TOP BAR -->
+  <div class="header">
+    <h1>📊 My BI Tool</h1>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+
+    <div>
+      <label>COURIER</label>
+      <select id="filterCourier" onchange="applyFilters()">
+        <option value="All">All Couriers</option>
+        <option value="Delhivery">Delhivery</option>
+        <option value="Bluedart">Bluedart</option>
+        <option value="Ekart">Ekart</option>
+        <option value="XpressBees">XpressBees</option>
+        <option value="DTDC">DTDC</option>
+      </select>
+    </div>
+
+    <div>
+      <label>ZONE</label>
+      <select id="filterZone" onchange="applyFilters()">
+        <option value="All">All Zones</option>
+        <option value="North">North</option>
+        <option value="South">South</option>
+        <option value="East">East</option>
+        <option value="West">West</option>
+        <option value="Metro">Metro</option>
+      </select>
+    </div>
+
+    <div>
+      <label>MONTH</label>
+      <select id="filterMonth" onchange="applyFilters()">
+        <option value="All">All Months</option>
+        <option value="Jan">Jan</option>
+        <option value="Feb">Feb</option>
+        <option value="Mar">Mar</option>
+        <option value="Apr">Apr</option>
+        <option value="May">May</option>
+        <option value="Jun">Jun</option>
+        <option value="Jul">Jul</option>
+        <option value="Aug">Aug</option>
+        <option value="Sep">Sep</option>
+        <option value="Oct">Oct</option>
+        <option value="Nov">Nov</option>
+        <option value="Dec">Dec</option>
+      </select>
+    </div>
+
+    <button class="reset-btn" onclick="resetFilters()">↺ Reset</button>
+
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-row">
+    <div class="kpi-box">
+      <div class="kpi-number" id="kpiOrders">1,240</div>
+      <div class="kpi-label">Total Orders</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-number" id="kpiDelivery">85%</div>
+      <div class="kpi-label">Delivery Rate</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-number" id="kpiTAT">3.2</div>
+      <div class="kpi-label">Avg TAT (days)</div>
+    </div>
+    <div class="kpi-box">
+      <div class="kpi-number" id="kpiNDR">12%</div>
+      <div class="kpi-label">NDR Rate</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="chart-row">
+    <div class="chart-box">
+      <p class="chart-title">Orders by Courier</p>
+      <canvas id="barChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <p class="chart-title">Orders by Zone</p>
+      <canvas id="pieChart"></canvas>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="chart-row">
+    <div class="chart-box">
+      <p class="chart-title">Orders per Month</p>
+      <canvas id="lineChart"></canvas>
+    </div>
+  </div>
+
+
+  <script>
+
+    // ─────────────────────────────────────────────────
+    // STEP 1 — YOUR FULL DATASET (each row = one order)
+    // In real life this will come from your Excel/CSV
+    // For now we create fake data to learn with
+    // ─────────────────────────────────────────────────
+
+    var allData = [
+      { courier:'Delhivery', zone:'North', month:'Jan', orders:40, delivered:35, tat:3.1 },
+      { courier:'Delhivery', zone:'South', month:'Feb', orders:38, delivered:32, tat:3.3 },
+      { courier:'Delhivery', zone:'East',  month:'Mar', orders:45, delivered:40, tat:2.9 },
+      { courier:'Delhivery', zone:'Metro', month:'Apr', orders:50, delivered:44, tat:2.7 },
+      { courier:'Delhivery', zone:'West',  month:'May', orders:42, delivered:37, tat:3.0 },
+      { courier:'Bluedart',  zone:'North', month:'Jan', orders:30, delivered:28, tat:2.5 },
+      { courier:'Bluedart',  zone:'South', month:'Feb', orders:25, delivered:23, tat:2.6 },
+      { courier:'Bluedart',  zone:'Metro', month:'Mar', orders:35, delivered:33, tat:2.4 },
+      { courier:'Bluedart',  zone:'East',  month:'Jun', orders:28, delivered:25, tat:2.8 },
+      { courier:'Ekart',     zone:'West',  month:'Jan', orders:20, delivered:17, tat:4.0 },
+      { courier:'Ekart',     zone:'North', month:'Apr', orders:22, delivered:18, tat:4.2 },
+      { courier:'Ekart',     zone:'South', month:'Jul', orders:18, delivered:15, tat:4.5 },
+      { courier:'XpressBees',zone:'Metro', month:'Feb', orders:15, delivered:13, tat:3.8 },
+      { courier:'XpressBees',zone:'West',  month:'May', orders:18, delivered:15, tat:3.9 },
+      { courier:'XpressBees',zone:'East',  month:'Aug', orders:20, delivered:17, tat:3.7 },
+      { courier:'DTDC',      zone:'North', month:'Mar', orders:10, delivered:8,  tat:5.0 },
+      { courier:'DTDC',      zone:'South', month:'Jun', orders:12, delivered:9,  tat:4.8 },
+      { courier:'DTDC',      zone:'Metro', month:'Sep', orders:11, delivered:9,  tat:4.9 },
+    ];
+
+
+    // ─────────────────────────────────────────────────
+    // STEP 2 — CREATE THE 3 CHARTS (empty at first)
+    // We fill them with data using updateCharts()
+    // ─────────────────────────────────────────────────
+
+    var barChart = new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label:'Orders', data: [], backgroundColor:['#f0a500','#06b6d4','#10b981','#f43f5e','#8b5cf6'], borderRadius:6 }] },
+      options: {
+        plugins: { legend: { labels: { color:'white' } } },
+        scales: {
+          x: { ticks: { color:'white' }, grid: { color:'#2a2a4a' } },
+          y: { ticks: { color:'white' }, grid: { color:'#2a2a4a' } }
+        }
+      }
+    });
+
+    var pieChart = new Chart(document.getElementById('pieChart'), {
+      type: 'pie',
+      data: { labels: [], datasets: [{ data: [], backgroundColor:['#f0a500','#06b6d4','#10b981','#f43f5e','#8b5cf6'] }] },
+      options: { plugins: { legend: { labels: { color:'white' } } } }
+    });
+
+    var lineChart = new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: { labels: [], datasets: [{ label:'Orders', data:[], borderColor:'#f0a500', backgroundColor:'#f0a50022', borderWidth:2, fill:true, tension:0.4, pointBackgroundColor:'#f0a500' }] },
+      options: {
+        plugins: { legend: { labels: { color:'white' } } },
+        scales: {
+          x: { ticks: { color:'white' }, grid: { color:'#2a2a4a' } },
+          y: { ticks: { color:'white' }, grid: { color:'#2a2a4a' } }
+        }
+      }
+    });
+
+
+    // ─────────────────────────────────────────────────
+    // STEP 3 — THE FILTER FUNCTION
+    // Runs every time you change a dropdown
+    // ─────────────────────────────────────────────────
+
+    function applyFilters() {
+
+      // Read what the user selected in each dropdown
+      var selectedCourier = document.getElementById('filterCourier').value;
+      var selectedZone    = document.getElementById('filterZone').value;
+      var selectedMonth   = document.getElementById('filterMonth').value;
+
+      // Filter the data — only keep rows that match
+      // If "All" is selected, keep everything for that filter
+      var filtered = allData.filter(function(row) {
+        var courierMatch = (selectedCourier === 'All' || row.courier === selectedCourier);
+        var zoneMatch    = (selectedZone    === 'All' || row.zone    === selectedZone);
+        var monthMatch   = (selectedMonth   === 'All' || row.month   === selectedMonth);
+        return courierMatch && zoneMatch && monthMatch;
+      });
+
+      // Now pass filtered data to update charts + KPIs
+      updateCharts(filtered);
+      updateKPIs(filtered);
+    }
+
+
+    // ─────────────────────────────────────────────────
+    // STEP 4 — UPDATE CHARTS with filtered data
+    // ─────────────────────────────────────────────────
+
+    function updateCharts(data) {
+
+      // --- BAR CHART: group orders by courier ---
+      var courierTotals = {};
+      data.forEach(function(row) {
+        if (!courierTotals[row.courier]) courierTotals[row.courier] = 0;
+        courierTotals[row.courier] += row.orders;
+      });
+      barChart.data.labels   = Object.keys(courierTotals);
+      barChart.data.datasets[0].data = Object.values(courierTotals);
+      barChart.update();
+
+      // --- PIE CHART: group orders by zone ---
+      var zoneTotals = {};
+      data.forEach(function(row) {
+        if (!zoneTotals[row.zone]) zoneTotals[row.zone] = 0;
+        zoneTotals[row.zone] += row.orders;
+      });
+      pieChart.data.labels   = Object.keys(zoneTotals);
+      pieChart.data.datasets[0].data = Object.values(zoneTotals);
+      pieChart.update();
+
+      // --- LINE CHART: group orders by month (in order) ---
+      var monthOrder = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      var monthTotals = {};
+      data.forEach(function(row) {
+        if (!monthTotals[row.month]) monthTotals[row.month] = 0;
+        monthTotals[row.month] += row.orders;
+      });
+      var sortedMonths = monthOrder.filter(function(m) { return monthTotals[m]; });
+      lineChart.data.labels  = sortedMonths;
+      lineChart.data.datasets[0].data = sortedMonths.map(function(m) { return monthTotals[m]; });
+      lineChart.update();
+    }
+
+
+    // ─────────────────────────────────────────────────
+    // STEP 5 — UPDATE KPI CARDS with filtered data
+    // ─────────────────────────────────────────────────
+
+    function updateKPIs(data) {
+      var totalOrders    = data.reduce(function(sum, r) { return sum + r.orders; }, 0);
+      var totalDelivered = data.reduce(function(sum, r) { return sum + r.delivered; }, 0);
+      var avgTAT         = data.length ? (data.reduce(function(sum, r) { return sum + r.tat; }, 0) / data.length).toFixed(1) : 0;
+      var deliveryRate   = totalOrders ? Math.round((totalDelivered / totalOrders) * 100) : 0;
+      var ndrRate        = totalOrders ? Math.round(((totalOrders - totalDelivered) / totalOrders) * 100) : 0;
+
+      document.getElementById('kpiOrders').innerText  = totalOrders.toLocaleString();
+      document.getElementById('kpiDelivery').innerText = deliveryRate + '%';
+      document.getElementById('kpiTAT').innerText      = avgTAT;
+      document.getElementById('kpiNDR').innerText      = ndrRate + '%';
+    }
+
+
+    // ─────────────────────────────────────────────────
+    // STEP 6 — RESET BUTTON: clear all filters
+    // ─────────────────────────────────────────────────
+
+    function resetFilters() {
+      document.getElementById('filterCourier').value = 'All';
+      document.getElementById('filterZone').value    = 'All';
+      document.getElementById('filterMonth').value   = 'All';
+      applyFilters();
+    }
+
+
+    // Load with all data on page open
+    applyFilters();
+
+  </script>
+
+</body>
+</html>
